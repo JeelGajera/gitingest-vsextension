@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ERROR_MESSAGES } from '../config';
+import { AnalysisResultData } from '../types';
 import { isSameOrChild, normalizePath, resolveIngestDestination } from '../utils/ingestPaths';
 
 export class WorkspaceService {
@@ -34,11 +35,7 @@ export class WorkspaceService {
         return this.extensionContext.workspaceState.update(this.TRACKED_INGEST_PATH_KEY, undefined);
     }
 
-    public static async saveResultsToFile(data: {
-        summary: string;
-        tree: string;
-        content: string;
-    }): Promise<void> {
+    public static async saveResultsToFile(data: AnalysisResultData): Promise<void> {
         const workspaceFolder = this.getWorkspaceFolder();
         if (!workspaceFolder) {
             throw new Error(ERROR_MESSAGES.NO_WORKSPACE);
@@ -120,6 +117,15 @@ export class WorkspaceService {
         vscode.window.showInformationMessage(`Added to ingest: ${addedPath}`);
     }
 
+    /** Open the digest as an unsaved editor tab instead of writing a file to the workspace. */
+    public static async openResultsInEditor(data: AnalysisResultData): Promise<void> {
+        const document = await vscode.workspace.openTextDocument({
+            content: this.formatAnalysisContent(data),
+            language: 'markdown',
+        });
+        await vscode.window.showTextDocument(document, { preview: false });
+    }
+
     private static async getUniqueRootFileUri(
         root: vscode.Uri,
         baseName: string,
@@ -138,11 +144,7 @@ export class WorkspaceService {
         }
     }
 
-    private static formatAnalysisContent(data: {
-        summary: string;
-        tree: string;
-        content: string;
-    }): string {
+    private static formatAnalysisContent(data: AnalysisResultData): string {
         return [
             '# Repository Analysis\n',
             '## Summary\n',

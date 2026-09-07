@@ -24,6 +24,9 @@ export async function handleWebviewMessage(
             case 'saveToFile':
                 await handleSaveToFile(message);
                 break;
+            case 'openInEditor':
+                await handleOpenInEditor(message);
+                break;
             case 'retry':
                 await handleAnalyzeCommand(panel);
                 break;
@@ -97,6 +100,13 @@ async function handleReIngestCommand(
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
         WebviewService.showError(panel, 'Re-Ingest Failed', [errorMessage]);
     }
+}
+
+async function handleOpenInEditor(message: WebviewMessage): Promise<void> {
+    if (!message.data) {
+        throw new Error('No data provided to open');
+    }
+    await WorkspaceService.openResultsInEditor(message.data);
 }
 
 async function handleSaveToFile(message: WebviewMessage): Promise<void> {

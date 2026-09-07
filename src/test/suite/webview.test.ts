@@ -55,3 +55,30 @@ describe('webview results', () => {
         assert.ok(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));
     });
 });
+
+describe('webview stat chips', () => {
+    it('renders chips for the summary facts', () => {
+        const html = getResultsContent(
+            { ...data, summary: 'Directory: repo\nFiles analyzed: 3\nEstimated tokens: 1.2k' },
+            '/workspace/repo',
+            filters,
+        );
+        assert.ok(html.includes('class="stat-chips"'));
+        assert.ok(html.includes('>Files analyzed</span><span class="stat-value">3</span>'));
+    });
+
+    it('omits the chips when the summary has no facts', () => {
+        const html = getResultsContent(
+            { ...data, summary: 'nothing structured here' },
+            '/workspace/repo',
+            filters,
+        );
+        assert.ok(!html.includes('class="stat-chips"'));
+    });
+
+    it('offers an open-in-editor action', () => {
+        const html = getResultsContent(data, '/workspace/repo', filters);
+        assert.ok(html.includes('openInEditor()'));
+        assert.ok(html.includes("command: 'openInEditor'"));
+    });
+});

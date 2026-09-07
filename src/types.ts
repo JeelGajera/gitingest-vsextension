@@ -1,6 +1,6 @@
 // Message types
 export interface WebviewMessage {
-    command: 'analyze' | 'cancel' | 'copy' | 'saveToFile' | 'retry' | 'reIngest';
+    command: 'analyze' | 'cancel' | 'copy' | 'saveToFile' | 'openInEditor' | 'retry' | 'reIngest';
     text?: string;
     path?: string;
     /** Filters edited in the results panel; untrusted, normalized before use. */
