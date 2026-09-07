@@ -65,10 +65,10 @@ GitIngest is a code editor extension that analyzes your entire codebase—Git re
 ### 🎨 **Modern Interface**
 
 - Beautiful three-panel webview layout
-- Interactive directory tree visualization
+- Clickable directory tree that builds your filters
+- Follows your editor's light or dark theme
 - Real-time progress indicators
-- Responsive design for all screen sizes
-- One-click copy functionality
+- One-click copy, save, or open in editor
 
 </td>
 <td>
@@ -100,7 +100,8 @@ GitIngest is a code editor extension that analyzes your entire codebase—Git re
 
 - Analyze entire repositories
 - Target specific folders
-- Selective file inclusion
+- Include / exclude patterns and a size limit, tuned in the panel
+- Staged files keep their original paths
 - Optional cleanup after analysis
 
 </td>
@@ -166,6 +167,10 @@ Before getting started, ensure you have:
 3. Once you've selected all desired items, run the analysis
 4. Optionally enable auto-cleanup in settings
 
+Staged items keep their location: `src/utils/helpers/example.ts` is staged as
+`gitingest-ingest/src/utils/helpers/example.ts`, so the digest still shows where each file lives.
+Set `gitingest.preserveStructureOnAdd` to `false` to stage everything flatly by name instead.
+
 </details>
 
 <div align="center">
@@ -213,6 +218,20 @@ Interactive tree view with smart filtering:
 - ❌ Node_modules filtered out
 - ❌ IDE-specific files hidden
 
+Hover any entry in the tree to get **+** and **−** buttons: they add that file or folder to the
+include or exclude patterns of the filter bar above the results (folders are added as `<folder>/**`).
+
+### 🎚️ Filter Bar & Re-Ingest
+
+Above the results you can adjust, without leaving the panel:
+
+- **Include patterns** – narrow the digest to just what you need (e.g. `src/**`)
+- **Exclude patterns** – drop noise (e.g. `**/*.min.js`)
+- **Max file size (KB)** – skip files larger than the limit
+
+Press **Re-Ingest** to re-run with the new filters, or **Reset to settings** to go back to your
+configured defaults. The last used filters are reused by **GitIngest: Re-Ingest Last Folder**.
+
 ### 📄 File Content Analysis
 
 Detailed breakdown including:
@@ -226,6 +245,7 @@ Detailed breakdown including:
 
 - 📋 **Copy to Clipboard** - Quick sharing
 - 💾 **Save as Text** - Local backup
+- 📝 **Open in Editor** - Review the digest in an unsaved tab, no file written
 
 ---
 
@@ -248,9 +268,17 @@ GitIngest handles these automatically:
 
 Access via **File > Preferences > Settings > Extensions > GitIngest**:
 
-- **Ingest Folder Name** – Folder name used to stage files when using "Add to Ingest" (default: `gitingest-ingest`).
-- **Delete After Ingest** – When enabled, the staging folder is removed after a successful analysis.
-- **File Exclusions** – Glob patterns to exclude from ingestion (e.g. `**/node_modules`, `**/*.min.js`). Applied in addition to `.gitignore` and `.gitingestignore`.
+| Setting                            | Default                      | What it does                                                                       |
+| ---------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| `gitingest.ingestFolderName`       | `gitingest-ingest`           | Folder used to stage files when using "Add to Ingest".                             |
+| `gitingest.preserveStructureOnAdd` | `true`                       | Keep the workspace-relative path of staged files and folders.                      |
+| `gitingest.deleteAfterIngest`      | `false`                      | Remove the staging folder after a successful analysis.                             |
+| `gitingest.fileExclusions`         | `**/node_modules`, `**/.git` | Glob patterns to exclude, in addition to `.gitignore` and `.gitingestignore`.      |
+| `gitingest.includePatterns`        | _(empty)_                    | Glob patterns to include; when empty, everything that is not excluded is included. |
+| `gitingest.maxFileSize`            | `10485760`                   | Maximum size in bytes of a single file in the digest.                              |
+
+The pattern and size settings are the starting point for the filter bar in the results panel, which
+can override them per run.
 
 ### .gitingestignore
 

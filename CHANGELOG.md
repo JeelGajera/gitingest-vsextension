@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.7.0] - Ingest Filters & Structure Preservation
+
+Added
+
+- **Filter bar in the results panel:** include patterns, exclude patterns and a max file size, applied by pressing **Re-Ingest** without leaving the panel. **Reset to settings** restores the configured defaults.
+- **Clickable directory tree:** hover an entry for **+** / **−** buttons that add that file or folder to the include or exclude patterns (folders as `<folder>/**`).
+- **Settings** `gitingest.includePatterns` and `gitingest.maxFileSize`, forwarded to the gitingest engine along with the existing exclusions.
+- **Open in Editor:** review a digest in an unsaved markdown tab instead of writing `digest.txt` into the workspace.
+- **Summary chips** above the results for files analyzed, estimated tokens and the other summary facts.
+- **Setting** `gitingest.preserveStructureOnAdd` (default `true`) to control the staging layout described below.
+
+Fixed
+
+- **Add to Ingest** now preserves the workspace-relative path of the selected item ([#13](https://github.com/ShreyPurohit/gitingest-vsextension/issues/13)): `src/utils/helpers/example.ts` is staged as `<ingest>/src/utils/helpers/example.ts` instead of a flat `<ingest>/example.ts`, so the digest keeps each file's real location.
+
+Changed
+
+- The results panel follows the editor theme instead of a fixed light palette.
+
+---
+
 ## [0.6.1] - Encoding Fix
 
 Fixed
