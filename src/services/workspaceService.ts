@@ -97,14 +97,14 @@ export class WorkspaceService {
             await vscode.workspace.fs.createDirectory(destinationParent);
         }
 
-        const destination = await this.getUniqueIngestChildUri(
-            destinationParent,
-            leafName,
-            isDirectory ? 'directory' : 'file',
-        );
-
+        let destination: vscode.Uri;
         try {
-            await vscode.workspace.fs.copy(resourceUri, destination, { overwrite: false });
+            destination = await this.copyIntoIngest(
+                resourceUri,
+                destinationParent,
+                leafName,
+                isDirectory,
+            );
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown copy error.';
             throw new Error(`Failed to add to ingest: ${message}`);
@@ -115,6 +115,51 @@ export class WorkspaceService {
             .split(path.sep)
             .join('/');
         vscode.window.showInformationMessage(`Added to ingest: ${addedPath}`);
+    }
+
+    /**
+     * Copy a resource into the ingest folder. Directories are merged into an existing
+     * folder of the same name - staging `src/a.ts` and then `src/` should fill one
+     * mirrored tree, not create a second `src (1)` next to it - while a file that
+     * would overwrite an existing one keeps the " (1)" suffix.
+     */
+    private static async copyIntoIngest(
+        source: vscode.Uri,
+        destinationParent: vscode.Uri,
+        name: string,
+        isDirectory: boolean,
+    ): Promise<vscode.Uri> {
+        if (!isDirectory) {
+            const destination = await this.getUniqueIngestChildUri(destinationParent, name, 'file');
+            await vscode.workspace.fs.copy(source, destination, { overwrite: false });
+            return destination;
+        }
+
+        const destination = vscode.Uri.joinPath(destinationParent, name);
+        if (!(await this.exists(destination))) {
+            await vscode.workspace.fs.copy(source, destination, { overwrite: false });
+            return destination;
+        }
+
+        await vscode.workspace.fs.createDirectory(destination);
+        for (const [childName, childType] of await vscode.workspace.fs.readDirectory(source)) {
+            await this.copyIntoIngest(
+                vscode.Uri.joinPath(source, childName),
+                destination,
+                childName,
+                (childType & vscode.FileType.Directory) !== 0,
+            );
+        }
+        return destination;
+    }
+
+    private static async exists(uri: vscode.Uri): Promise<boolean> {
+        try {
+            await vscode.workspace.fs.stat(uri);
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     /** Open the digest as an unsaved editor tab instead of writing a file to the workspace. */
